@@ -322,4 +322,5 @@ bool ksu_is_manager_apk(char *path)
 #else
 	return (check_v2_signature(path, EXPECTED_NEXT_SIZE, EXPECTED_NEXT_HASH) 
 	|| check_v2_signature(path, EXPECTED_SIZE, EXPECTED_HASH));
+#endif
 }

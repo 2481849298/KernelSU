@@ -554,7 +554,7 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 				pr_err("susfs: CMD_SUSFS_SET_CMDLINE_OR_BOOTCONFIG -> arg5 is not accessible\n");
 				return 0;
 			}
-			error = susfs_set_proc_cmdline((char __user*)arg3);
+			error = susfs_set_cmdline_or_bootconfig((char __user*)arg3);
 			pr_info("susfs: CMD_SUSFS_SET_CMDLINE_OR_BOOTCONFIG -> ret: %d\n", error);
 			if (copy_to_user((void __user*)arg5, &error, sizeof(error)))
 				pr_info("susfs: copy_to_user() failed\n");
