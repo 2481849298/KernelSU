@@ -1,16 +1,15 @@
-**English** | [Español](README_ES.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [日本語](README_JP.md) | [한국어](README_KR.md) | [Polski](README_PL.md) | [Português (Brasil)](README_PT-BR.md) | [Türkçe](README_TR.md) | [Русский](README_RU.md) | [Tiếng Việt](README_VI.md) | [Indonesia](README_ID.md) | [עברית](README_IW.md) | [हिंदी](README_IN.md) | [Italiano](README_IT.md)
+**English** | [简体中文](/docs/README_CN.md) | [Türkçe](/docs/README_TR.md)
 
-# KernelSU
+# KernelSU Next
 
-<img src="https://kernelsu.org/logo.png" style="width: 96px;" alt="logo">
+<img src="/assets/kernelsu_next.png" style="width: 96px;" alt="logo">
 
 A Kernel-based root solution for Android devices.
 
-[![Latest release](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
-[![Weblate](https://img.shields.io/badge/Localization-Weblate-teal?logo=weblate)](https://hosted.weblate.org/engage/kernelsu)
-[![Channel](https://img.shields.io/badge/Follow-Telegram-blue.svg?logo=telegram)](https://t.me/KernelSU)
+[![Latest release](https://img.shields.io/github/v/release/rifsxd/KernelSU-Next?label=Release&logo=github)](https://github.com/rifsxd/KernelSU-Next/releases/latest)
+[![Nightly Release](https://img.shields.io/badge/Nightly%20release-gray?logo=hackthebox&logoColor=fff)](https://nightly.link/rifsxd/KernelSU-Next/workflows/build-manager/next/manager)
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
-[![GitHub License](https://img.shields.io/github/license/tiann/KernelSU?logo=gnu)](/LICENSE)
+[![GitHub License](https://img.shields.io/github/license/rifsxd/KernelSU-Next?logo=gnu)](/LICENSE)
 
 ## Features
 
@@ -20,25 +19,12 @@ A Kernel-based root solution for Android devices.
 
 ## Compatibility State
 
-KernelSU officially supports Android GKI 2.0 devices (kernel 5.10+). Older kernels (4.14+) are also compatible, but the kernel will have to be built manually.
+KernelSU Next officially supports most Android kernels starting from 4.9 upto 6.6.
+ - GKI 2.0 (5.10+) kernels can run pre-built images and LKM/KMI.
+ - GKI 1.0 (4.19 - 5.4) kernels need to rebuilt with KernelSU driver.
+ - EOL (<4.19) kernels also need to be rebuilt with KernelSU driver.
 
-With this, WSA, ChromeOS, and container-based Android are all supported.
-
-Currently, only `arm64-v8a` and `x86_64` are supported.
-
-## Usage
-
-- [Installation Instruction](https://kernelsu.org/guide/installation.html)
-- [How to build?](https://kernelsu.org/guide/how-to-build.html)
-- [Official Website](https://kernelsu.org/)
-
-## Translation
-
-To help translate KernelSU or improve existing translations, please use [Weblate](https://hosted.weblate.org/engage/kernelsu/). PR of Manager's translation is no longer accepted, because it will conflict with Weblate.
-
-## Discussion
-
-- Telegram: [@KernelSU](https://t.me/KernelSU)
+Currently, only `arm64-v8a` is supported.
 
 ## Security
 
@@ -55,3 +41,4 @@ For information on reporting security vulnerabilities in KernelSU, see [SECURITY
 - [Magisk](https://github.com/topjohnwu/Magisk): the powerful root tool.
 - [genuine](https://github.com/brevent/genuine/): apk v2 signature validation.
 - [Diamorphine](https://github.com/m0nad/Diamorphine): some rootkit skills.
+- [KernelSU](https://github.com/tiann/KernelSU): thanks to tiann or else KernelSU Next wouldn't even exist.
