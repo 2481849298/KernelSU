@@ -10,10 +10,24 @@
 #include "klog.h" // IWYU pragma: keep
 #include "ksu.h"
 #include "throne_tracker.h"
+#include <linux/init.h>
 
 #ifdef CONFIG_KSU_SUSFS
 #include <linux/susfs.h>
 #endif
+
+unsigned int enable_kernelsu = 1;
+static int __init read_kernelsu_state(char *s)
+{
+	if (s)
+		enable_kernelsu = simple_strtoul(s, NULL, 0);
+	return 1;
+}
+__setup("kernelsu.enabled=", read_kernelsu_state);
+unsigned int get_ksu_state(void)
+{
+	return enable_kernelsu;
+}
 
 static struct workqueue_struct *ksu_workqueue;
 
@@ -43,6 +57,11 @@ extern void ksu_ksud_exit();
 
 int __init ksu_kernelsu_init(void)
 {
+	if (enable_kernelsu < 1) {
+		pr_info_once(" is disabled");
+		return 0;
+	}
+
 #ifdef CONFIG_KSU_DEBUG
 	pr_alert("*************************************************************");
 	pr_alert("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
