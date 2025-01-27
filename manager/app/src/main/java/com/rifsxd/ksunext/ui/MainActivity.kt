@@ -5,6 +5,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -66,17 +69,6 @@ class MainActivity : ComponentActivity() {
         val isManager = Natives.becomeManager(ksuApp.packageName)
 	    if (isManager) install()
 
-        val prefs = getSharedPreferences("settings", MODE_PRIVATE)
-
-        val isSUS_SU = getSuSFSFeatures()
-        if (isSUS_SU == "CONFIG_KSU_SUSFS_SUS_SU") {
-            if (prefs.getBoolean("enable_sus_su", false)) {
-                if (susfsSUS_SU_Mode() != "2") {
-                    susfsSUS_SU_2()
-                }
-            }
-        }
-
         setContent {
             KernelSUTheme {
                 val navController = rememberNavController()
@@ -91,7 +83,11 @@ class MainActivity : ComponentActivity() {
 
                 Scaffold(
                     bottomBar = {
-                        if (showBottomBar) {
+                        AnimatedVisibility(
+                            visible = showBottomBar,
+                            enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
+                            exit = slideOutVertically(targetOffsetY = { it }) + fadeOut()
+                        ) {
                             BottomBar(navController)
                         }
                     },

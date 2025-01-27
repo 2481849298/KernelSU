@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Save
@@ -52,6 +53,7 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
@@ -73,6 +75,43 @@ enum class FlashingStatus {
     FLASHING,
     SUCCESS,
     FAILED
+}
+
+// Lets you flash modules sequentially when mutiple zipUris are selected
+fun flashModulesSequentially(
+    uris: List<Uri>,
+    onFinish: (Boolean, Int) -> Unit,
+    onStdout: (String) -> Unit,
+    onStderr: (String) -> Unit
+) {
+    val iterator = uris.iterator()
+
+    // Start processing from the first module inside a coroutine
+    CoroutineScope(Dispatchers.IO).launch {
+        // Define the recursive function within the coroutine
+        suspend fun processNext() {
+            if (iterator.hasNext()) {
+                // Flash the current module
+                flashModule(iterator.next(), onFinish = { showReboot, code ->
+                    // If successful, continue to the next one
+                    if (code == 0) {
+                        // Recursively call to process the next module
+                        launch {
+                            processNext()
+                        }
+                    } else {
+                        onFinish(showReboot, code)  // If failed, finish the process
+                    }
+                }, onStdout, onStderr)
+            } else {
+                // No more modules to process, finish the process
+                onFinish(true, 0)
+            }
+        }
+
+        // Start the process
+        processNext()
+    }
 }
 
 /**
@@ -133,13 +172,16 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
         topBar = {
             TopBar(
                 flashing,
+                onBack = {
+                    navigator.popBackStack()
+                },
                 onSave = {
                     scope.launch {
                         val format = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.getDefault())
                         val date = format.format(Date())
                         val file = File(
                             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-                            "KernelSU_Next_install_log_${date}.log"
+                            "KernelSU_install_log_${date}.log"
                         )
                         file.writeText(logContent.toString())
                         snackBarHost.showSnackbar("Log saved to ${file.absolutePath}")
@@ -148,8 +190,24 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
                 scrollBehavior = scrollBehavior
             )
         },
-        snackbarHost = { SnackbarHost(hostState = snackBarHost) },
-        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+        floatingActionButton = {
+            if (showFloatAction) {
+                // Reboot button (bottom left)
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        scope.launch {
+                            withContext(Dispatchers.IO) {
+                                reboot()
+                            }
+                        }
+                    },
+                    icon = { Icon(Icons.Filled.Refresh, contentDescription = stringResource(R.string.reboot)) },
+                    text = { Text(text = stringResource(R.string.reboot)) }
+                )
+            }
+        },
+        contentWindowInsets = WindowInsets.safeDrawing,
+        snackbarHost = { SnackbarHost(hostState = snackBarHost) }
     ) { innerPadding ->
         KeyEventBlocker {
             it.key == Key.VolumeDown || it.key == Key.VolumeUp
@@ -172,44 +230,6 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
                 lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
             )
         }
-
-        // Floating Action Buttons
-        Box(modifier = Modifier.fillMaxSize()) {
-            // Reboot button (bottom left)
-            if (showFloatAction) {
-                val reboot = stringResource(id = R.string.reboot)
-                ExtendedFloatingActionButton(
-                    onClick = {
-                        scope.launch {
-                            withContext(Dispatchers.IO) {
-                                reboot()
-                            }
-                        }
-                    },
-                    icon = { Icon(Icons.Filled.Refresh, reboot) },
-                    text = { Text(text = reboot) },
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .padding(16.dp)
-                        .navigationBarsPadding()
-                )
-            }
-
-            if (showFloatAction) {
-                // Back button (bottom right)
-                ExtendedFloatingActionButton(
-                    onClick = {
-                        navigator.popBackStack()
-                    },
-                    text = { Text(text = stringResource(R.string.close)) },
-                    icon = { Icon(Icons.Filled.Close, contentDescription = null) },
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(16.dp)
-                        .navigationBarsPadding()
-                )
-            }
-        }
     }
 }
 
@@ -219,6 +239,8 @@ sealed class FlashIt : Parcelable {
         FlashIt()
 
     data class FlashModule(val uri: Uri) : FlashIt()
+
+    data class FlashModules(val uris: List<Uri>) : FlashIt()
 
     data object FlashRestore : FlashIt()
 
@@ -242,6 +264,10 @@ fun flashIt(
 
         is FlashIt.FlashModule -> flashModule(flashIt.uri, onFinish, onStdout, onStderr)
 
+        is FlashIt.FlashModules -> {
+            flashModulesSequentially(flashIt.uris, onFinish, onStdout, onStderr)
+        }
+
         FlashIt.FlashRestore -> restoreBoot(onFinish, onStdout, onStderr)
 
         FlashIt.FlashUninstall -> uninstallPermanently(onFinish, onStdout, onStderr)
@@ -252,6 +278,7 @@ fun flashIt(
 @Composable
 private fun TopBar(
     status: FlashingStatus,
+    onBack: () -> Unit = {},
     onSave: () -> Unit = {},
     scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
@@ -266,6 +293,12 @@ private fun TopBar(
                     }
                 )
             )
+        },
+        navigationIcon = {
+            IconButton(
+                onClick = { if (status != FlashingStatus.FLASHING) onBack() },
+                enabled = status != FlashingStatus.FLASHING
+            ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null) }
         },
         actions = {
             IconButton(

@@ -1,5 +1,2 @@
 .idea
 .vscode
-*.rej
-*.patch
-*.orig
