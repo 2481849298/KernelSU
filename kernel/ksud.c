@@ -162,7 +162,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 			     struct user_arg_ptr *argv,
 			     struct user_arg_ptr *envp, int *flags)
 {
-#if defined(CONFIG_KPROBES) && 0
+#ifndef CONFIG_KPROBES
 	if (!ksu_execveat_hook) {
 		return 0;
 	}
@@ -318,7 +318,7 @@ static ssize_t read_iter_proxy(struct kiocb *iocb, struct iov_iter *to)
 int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
 			size_t *count_ptr, loff_t **pos)
 {
-#if defined(CONFIG_KPROBES) && 0
+#ifndef CONFIG_KPROBES
 	if (!ksu_vfs_read_hook) {
 		return 0;
 	}
@@ -431,7 +431,7 @@ static bool is_volumedown_enough(unsigned int count)
 int ksu_handle_input_handle_event(unsigned int *type, unsigned int *code,
 				  int *value)
 {
-#if defined(CONFIG_KPROBES) && 0
+#ifndef CONFIG_KPROBES
 	if (!ksu_input_hook) {
 		return 0;
 	}
