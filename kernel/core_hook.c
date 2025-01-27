@@ -1345,9 +1345,9 @@ void __init ksu_core_init(void)
 
 void ksu_core_exit(void)
 {
-/*#ifdef CONFIG_KPROBES
+#if defined(CONFIG_KPROBES) && 0
 	pr_info("ksu_core_kprobe_exit\n");
 	// we dont use this now
 	// ksu_kprobe_exit();
-#endif*/
+#endif
 }
