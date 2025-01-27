@@ -84,12 +84,12 @@ int __init ksu_kernelsu_init(void)
 
 	ksu_throne_tracker_init();
 
-#ifdef CONFIG_KPROBES
+/*#ifdef CONFIG_KPROBES
 	ksu_sucompat_init();
 	ksu_ksud_init();
-#else
+#else*/
 	pr_alert("KPROBES is disabled, KernelSU may not work, please check https://kernelsu.org/guide/how-to-integrate-for-non-gki.html");
-#endif
+//#endif
 
 #ifdef MODULE
 #ifndef CONFIG_KSU_DEBUG
@@ -107,10 +107,10 @@ void ksu_kernelsu_exit(void)
 
 	destroy_workqueue(ksu_workqueue);
 
-#ifdef CONFIG_KPROBES
+/*#ifdef CONFIG_KPROBES
 	ksu_ksud_exit();
 	ksu_sucompat_exit();
-#endif
+#endif*/
 
 	ksu_core_exit();
 }
